@@ -1,12 +1,30 @@
 # LLM Dynamic Planner (LLM-DP)
 
+LLM Dynamic Planner (LLM-DP) is a framework that integrates Large Language Models (LLMs) with automated planning systems to solve complex tasks in dynamic environments. It leverages the reasoning capabilities of LLMs to generate high-level plans and uses a symbolic planner (e.g., LAPKT) to refine and execute these plans. This approach is particularly useful in environments like ALFWorld and TextWorld, where agents must interact with a simulated world to achieve specific goals.
+
+## Goals
+
+- **Combine LLMs and Symbolic Planning**: Bridge the gap between high-level reasoning (LLMs) and low-level task execution (symbolic planners) to solve complex tasks efficiently.
+- **Dynamic Adaptation**: Enable the system to adapt to changes in the environment by dynamically updating plans based on real-time feedback.
+- **Generalization**: Improve generalization across tasks by leveraging the knowledge encoded in LLMs and the robustness of symbolic planners.
+- **Benchmarking**: Provide a framework for benchmarking the performance of LLM-based planning systems in interactive environments like ALFWorld and TextWorld.
+
+## Key Features
+
+- **Integration with ALFWorld and TextWorld**: Seamlessly integrates with both ALFWorld and TextWorld environments for task-oriented simulations.
+- **Support for Multiple Planners**: Supports both BFS-F and FF planners for generating and executing plans.
+- **Customizable Configurations**: Allows users to customize various parameters such as timeouts, CPU usage, and LLM models.
+- **ReAct Baseline**: Includes an implementation of the ReAct baseline for comparison with LLM-DP.
+- **Random Fallback**: Provides a random fallback mechanism for handling cases where the planner or LLM fails to generate a valid plan.
+
 ## Setup
 
 1. Install ``alfworld`` following instructions [here](https://github.com/alfworld/alfworld).
-2. Install requirements: ``pip install -r requirements.txt``.
-3. Install docker for running LAPKT planner. There are two different docker images available:
+2. Install ``textworld`` using pip: ``pip install textworld``.
+3. Install requirements: ``pip install -r requirements.txt``.
+4. Install docker for running LAPKT planner. There are two different docker images available:
    - The docker image for the linux/arm64 platform is available [here](<https://hub.docker.com/repository/docker/gautierdag/lapkt-arm/general>). See the `Dockerfile` for more details.
-   - The docker image for the linux/amd64 platform is available [here](<https://hub.docker.com/r/lapkt/lapkt-public>)
+   - The docker image for the linux/amd64 platform is available [here](<https://hub.docker.com/r/lapkt/lapkt-public>).
 
 ## Config
 
@@ -40,4 +58,3 @@ Run the following command to run the LLM-DP (or ReAct) agent:
 
 ```bash
 python main.py
-```
