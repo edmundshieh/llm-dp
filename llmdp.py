@@ -228,7 +228,7 @@ class LLMDPAgent:
 
     def get_pddl_goal(self) -> str:
         """
-        Given a task description return the PDDL goal using an LLM.
+        Given a task description, return the PDDL goal using an LLM.
         """
         prompt_messages = GENERATE_GOAL_PROMPT + [
             {
@@ -240,6 +240,7 @@ class LLMDPAgent:
             prompt_messages, stop=None, temperature=self.temperature
         )
         self.llm_tokens_used += token_usage["total_tokens"]
+        self.logger.debug(f"Generated PDDL goal: {pddl_goal}")
         return pddl_goal
 
     def get_pddl_belief_predicate(
@@ -495,3 +496,64 @@ class LLMDPAgent:
         )
 
         return alfworld_action
+
+    def validate_pddl_goal(self, pddl_goal: str) -> bool:
+        """
+        Validates the syntax of the generated PDDL goal.
+        """
+        try:
+            # Check if the goal starts with (:goal and ends with ))
+            if not pddl_goal.strip().startswith("(:goal") or not pddl_goal.strip().endswith("))"):
+                return False
+            # Additional validation logic can be added here
+            return True
+        except Exception as e:
+            self.logger.error(f"Error validating PDDL goal: {e}")
+            return False
+
+    def interpret_observation(self, observation: str) -> dict:
+        """
+        Uses the LLM to interpret complex observations and extract structured information.
+        """
+        prompt_messages = [
+            {
+                "role": "system",
+                "content": "You are an intelligent agent that interprets observations in a household environment. Extract structured information from the following observation:",
+            },
+            {
+                "role": "user",
+                "content": observation,
+            },
+        ]
+        llm_response, token_usage = llm_cache(
+            prompt_messages, stop=None, temperature=self.temperature
+        )
+        self.llm_tokens_used += token_usage["total_tokens"]
+        try:
+            # Assume the LLM returns a JSON-like string
+            structured_info = eval(llm_response)
+        except Exception as e:
+            self.logger.error(f"Error parsing LLM response: {llm_response}")
+            raise e
+        return structured_info
+
+    def prioritize_actions(self, plans: list[list[str]]) -> list[str]:
+        """
+        Prioritizes actions in the plan based on urgency or cost.
+        """
+        # Example: Prioritize actions that reduce uncertainty or are time-sensitive
+        prioritized_plan = sorted(plans, key=lambda x: len(x))  # Choose the shortest plan
+        return prioritized_plan[0]
+
+    def get_probabilistic_pddl_problem(self) -> str:
+        """
+        Generates a probabilistic PDDL problem file to handle uncertainty.
+        """
+        # Example: Add probabilistic effects to the PDDL problem
+        probabilistic_init = ""
+        for obj, atts in self.scene_objects.items():
+            if "beliefs" in atts:
+                for belief, options in atts["beliefs"].items():
+                    for option in options:
+                        probabilistic_init += f"(probabilistic 0.5 ({belief} {obj} {option}))\n"
+        return f"(define (problem alf)\n(:domain alfred)\n{self.get_pddl_objects()}(:init {probabilistic_init})\n{self.pddl_goal})"
